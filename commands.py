@@ -58,7 +58,12 @@ async def greylist_phrase_remove(update: Update, context: CallbackContext) -> No
 async def users_pattern_add(update: Update, context: CallbackContext) -> None:
     bot_id = context.bot.id
     chat_id = update.effective_message.chat_id
-    user_pattern = (update.effective_message.text or '').strip().split(' ', maxsplit=1)[-1]
+    command_args = (update.effective_message.text or '').strip().split(' ', maxsplit=1)
+    if len(command_args) == 1:
+        await update.message.reply_text(f"This command requires 1 argument")
+        return
+
+    user_pattern = command_args[-1]
     user_id = update.effective_message.from_user.id
 
     if user_pattern:
