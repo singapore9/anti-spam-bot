@@ -1,9 +1,12 @@
+import time
+
 import firebase_admin
 from firebase_admin import db
 from constants import DATABASE_URL, FIREBASE_CERTIFICATE
 
 
 GREYLIST_KEY = "greylist"
+BLOCK_USERS_PATTERNS_KEY = "block_user_patterns"
 USERS_KEY = "users"
 
 
@@ -67,6 +70,29 @@ def set_chat_limits(bot_id, chat_id, phrase, count):
         chat_info = {
             GREYLIST_KEY: {phrase: count},
             USERS_KEY: None
+        }
+    set_chat_info(bot_id, chat_id, chat_info)
+    return
+
+
+def get_chat_users_patterns(bot_id, chat_id):
+    chat_info = get_chat_info(bot_id, chat_id)
+    if chat_info and BLOCK_USERS_PATTERNS_KEY in chat_info:
+        return chat_info[BLOCK_USERS_PATTERNS_KEY]
+    else:
+        return None
+
+
+def set_chat_users_patterns(bot_id, chat_id, pattern):
+    chat_info = get_chat_info(bot_id, chat_id)
+    timestamp = str(int(time.time()))
+    if chat_info and BLOCK_USERS_PATTERNS_KEY in chat_info:
+        chat_info[BLOCK_USERS_PATTERNS_KEY][timestamp] = pattern
+    elif chat_info:
+        chat_info[BLOCK_USERS_PATTERNS_KEY] = {timestamp: pattern}
+    else:
+        chat_info = {
+            BLOCK_USERS_PATTERNS_KEY: {timestamp: pattern},
         }
     set_chat_info(bot_id, chat_id, chat_info)
     return

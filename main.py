@@ -6,8 +6,8 @@ from telegram import Update
 from telegram.ext import (ApplicationBuilder, CallbackContext, MessageHandler)
 from telegram.ext.filters import TEXT, COMMAND, ALL
 
-from constants import TELEGRAM_TOKEN, BLOCK_USERS_WITH_NAMES_REGEXP
-from firebase import get_user_info, set_user_info, get_chat_limits, del_user_info, DEFAULT_LIMIT
+from constants import TELEGRAM_TOKEN
+from firebase import get_user_info, set_user_info, get_chat_limits, del_user_info, get_chat_users_patterns, DEFAULT_LIMIT
 
 
 logging.basicConfig(
@@ -20,13 +20,15 @@ logger = logging.getLogger(__name__)
 
 
 async def check_and_ban_new_members(update: Update, context: CallbackContext) -> None:
+    bot_id = context.bot.id
     chat_id = update.effective_message.chat_id
     new_chat_members = update.effective_message.new_chat_members
+    block_user_patterns = list((get_chat_users_patterns(bot_id, chat_id) or dict()).values())
     for new_chat_member in new_chat_members:
         member_id = new_chat_member.id
         full_name = new_chat_member.full_name
         try:
-            for pattern in BLOCK_USERS_WITH_NAMES_REGEXP:
+            for pattern in block_user_patterns:
                 if re.fullmatch(pattern, full_name):
                     await update.effective_message.reply_text(f'ban for you: {full_name}')
                     await context.bot.banChatMember(chat_id=chat_id, user_id=member_id)
