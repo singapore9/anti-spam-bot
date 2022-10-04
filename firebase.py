@@ -3,7 +3,7 @@ from firebase_admin import db
 from constants import DATABASE_URL, FIREBASE_CERTIFICATE
 
 
-GREY_PHRASES_LIMIT_KEY = "greylist_repeat"
+GREYLIST_KEY = "greylist"
 USERS_KEY = "users"
 
 
@@ -52,22 +52,24 @@ def set_chat_info(bot_id, chat_id, chat_info):
 def get_chat_limits(bot_id, chat_id):
     chat_info = get_chat_info(bot_id, chat_id)
     if chat_info:
-        return chat_info[GREY_PHRASES_LIMIT_KEY]
+        return chat_info[GREYLIST_KEY]
     else:
-        return DEFAULT_LIMIT
+        return None
 
 
-def set_chat_limits(bot_id, chat_id, messages_count):
+def set_chat_limits(bot_id, chat_id, phrase, count):
     chat_info = get_chat_info(bot_id, chat_id)
-    if chat_info:
-        chat_info[GREY_PHRASES_LIMIT_KEY] = messages_count
+    if chat_info and GREYLIST_KEY in chat_info:
+        chat_info[GREYLIST_KEY][phrase] = count
+    elif chat_info:
+        chat_info[GREYLIST_KEY] = {phrase: count}
     else:
         chat_info = {
-            GREY_PHRASES_LIMIT_KEY: messages_count,
+            GREYLIST_KEY: {phrase: count},
             USERS_KEY: None
         }
     set_chat_info(bot_id, chat_id, chat_info)
-    return messages_count
+    return
 
 
 def get_user_info(bot_id, chat_id, user_id):
@@ -93,7 +95,7 @@ def set_user_info(bot_id, chat_id, user_id, phrase_and_count):
             chat_info[USERS_KEY] = {user_id: phrase_and_count}
     else:
         chat_info = {
-            GREY_PHRASES_LIMIT_KEY: DEFAULT_LIMIT,
+            GREYLIST_KEY: {"phrase for test bot": DEFAULT_LIMIT},
             USERS_KEY: {user_id: phrase_and_count}
         }
     set_chat_info(bot_id, chat_id, chat_info)
