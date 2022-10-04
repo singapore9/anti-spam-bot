@@ -1,2 +1,6 @@
 TELEGRAM_TOKEN = ""
 BLOCK_USERS_WITH_NAMES_REGEXP = [r"", ]
+GREY_PHRASES_LIST = ["", ]
+
+FIREBASE_CERTIFICATE = dict()
+DATABASE_URL = "https://.firebasedatabase.app"
