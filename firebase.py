@@ -75,6 +75,14 @@ def set_chat_limits(bot_id, chat_id, phrase, count):
     return
 
 
+def del_chat_limits(bot_id, chat_id, phrase):
+    chat_info = get_chat_info(bot_id, chat_id)
+    if chat_info and GREYLIST_KEY in chat_info:
+        del chat_info[GREYLIST_KEY][phrase]
+        set_chat_info(bot_id, chat_id, chat_info)
+    return
+
+
 def get_chat_users_patterns(bot_id, chat_id):
     chat_info = get_chat_info(bot_id, chat_id)
     if chat_info and BLOCK_USERS_PATTERNS_KEY in chat_info:
@@ -95,6 +103,16 @@ def set_chat_users_patterns(bot_id, chat_id, pattern):
             BLOCK_USERS_PATTERNS_KEY: {timestamp: pattern},
         }
     set_chat_info(bot_id, chat_id, chat_info)
+    return
+
+
+def del_chat_users_patterns(bot_id, chat_id, pattern):
+    chat_info = get_chat_info(bot_id, chat_id)
+    if chat_info and BLOCK_USERS_PATTERNS_KEY in chat_info:
+        timestamps = [ts for ts, p in chat_info[BLOCK_USERS_PATTERNS_KEY].items() if p == pattern]
+        for ts in timestamps:
+            del chat_info[BLOCK_USERS_PATTERNS_KEY][ts]
+        set_chat_info(bot_id, chat_id, chat_info)
     return
 
 

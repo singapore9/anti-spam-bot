@@ -3,10 +3,12 @@ import re
 
 from fastapi import FastAPI, Request
 from telegram import Update
-from telegram.ext import (ApplicationBuilder, CallbackContext, MessageHandler)
-from telegram.ext.filters import TEXT, COMMAND, ALL
+from telegram.ext import (ApplicationBuilder, CallbackContext, MessageHandler, CommandHandler)
+from telegram.ext.filters import TEXT, COMMAND
 
 from constants import TELEGRAM_TOKEN
+from commands import (users_pattern_add, users_pattern_show, users_pattern_remove,
+                      greylist_phrase_add, greylist_phrase_show, greylist_phrase_remove)
 from firebase import get_user_info, set_user_info, get_chat_limits, del_user_info, get_chat_users_patterns, DEFAULT_LIMIT
 
 
@@ -87,7 +89,19 @@ async def filter_by_name_and_messages(update: Update, context: CallbackContext) 
 
 def get_tg_application():
     tg_application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-    tg_application.add_handler(MessageHandler(filters=ALL, callback=filter_by_name_and_messages))
+    tg_application.add_handler(MessageHandler(filters=TEXT & ~COMMAND, callback=filter_by_name_and_messages))
+    tg_application.add_handler(CommandHandler('users_pattern_add', users_pattern_add))
+    tg_application.add_handler(CommandHandler('users_pattern_show', users_pattern_show))
+    tg_application.add_handler(CommandHandler('users_pattern_remove', users_pattern_remove))
+    tg_application.add_handler(CommandHandler('greylist_phrase_add', greylist_phrase_add))
+    tg_application.add_handler(CommandHandler('greylist_phrase_show', greylist_phrase_show))
+    tg_application.add_handler(CommandHandler('greylist_phrase_remove', greylist_phrase_remove))
+    # users_pattern_add "\s*\w\("
+    # users_pattern_show
+    # users_pattern_remove "\s*\w\s("
+    # greylist_phrase_add 5 hello
+    # greylist_phrase_show
+    # greylist_phrase_remove hello
     return tg_application
 
 
