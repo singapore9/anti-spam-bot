@@ -21,8 +21,8 @@ async def greylist_phrase_show(update: Update, context: CallbackContext) -> None
     chat_id = update.effective_message.chat_id
     user_id = update.effective_message.from_user.id
 
-    greylist_phrases = list((get_chat_limits(bot_id, chat_id) or dict()).keys())
-    greylist_phrases_str = '\n'.join([f"...({greylist_phrase})..." for greylist_phrase in greylist_phrases])
+    greylist_phrases = get_chat_limits(bot_id, chat_id) or dict()
+    greylist_phrases_str = '\n'.join([f"...({greylist_phrase}) for {limit} times..." for greylist_phrase, limit in greylist_phrases.items()])
 
     await update.message.reply_text(f"Phrases are:\n{greylist_phrases_str}")
 
