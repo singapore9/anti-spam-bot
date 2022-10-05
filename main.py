@@ -32,11 +32,10 @@ async def check_and_ban_new_members(update: Update, context: CallbackContext) ->
         try:
             for pattern in block_user_patterns:
                 if re.fullmatch(pattern, full_name):
-                    await update.effective_message.reply_text(f'ban for you: {full_name}')
                     await context.bot.banChatMember(chat_id=chat_id, user_id=member_id)
                     break
         except Exception as e:
-            await update.effective_message.reply_text(f'failed: {e}')
+            pass
 
 
 async def calculate_messages(update: Update, context: CallbackContext) -> None:
@@ -53,15 +52,9 @@ async def calculate_messages(update: Update, context: CallbackContext) -> None:
 
     for pattern in grey_phrases:
         pattern_lower = pattern.lower()
-        await update.effective_message.reply_text(f"We are checking this message ({text_lower}) with pattern: {pattern_lower}")
         if text_lower == pattern_lower:
             text_like_pattern = True
             specific_limit = (grey_phrases_limits or dict()).get(pattern_lower, DEFAULT_LIMIT)
-
-            await update.effective_message.reply_text(
-                f"Limits: {grey_phrases_limits} ({specific_limit}), your score was: {count} ({type(count)}). Be careful!")
-            await update.effective_message.reply_text(
-                f"Latest phrase: {latest_pattern}, pattern: {pattern_lower}")
 
             if latest_pattern != pattern_lower:
                 count = 1
@@ -69,13 +62,10 @@ async def calculate_messages(update: Update, context: CallbackContext) -> None:
                 count += 1
 
             if count > 1:
-                await update.effective_message.reply_text(
-                    f"1st step of refreshing info about you")
                 del_user_info(bot_id, chat_id, user_id)
 
             if specific_limit <= count:
                 await context.bot.banChatMember(chat_id=chat_id, user_id=user_id)
-                await update.effective_message.reply_text(f"I'm sorry (not). Your behaviour similar to spam-accounts, ban!")
             set_user_info(bot_id, chat_id, user_id, [pattern_lower, count])
             break
     if not text_like_pattern:
